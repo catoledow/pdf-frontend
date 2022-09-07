@@ -1,24 +1,55 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import "rmwc/dist/styles";
+import { TopAppBar, TopAppBarRow, TopAppBarSection, TopAppBarTitle, TopAppBarFixedAdjust } from '@rmwc/top-app-bar';
+import { List, ListItem, ListItemGraphic, ListItemText, ListItemPrimaryText, ListItemSecondaryText, ListItemMeta } from '@rmwc/list';
 
 function App() {
+
+  const [backendData, setBackendData] = useState([{}]);
+
+  useEffect(() => {
+    fetch(process.env.REACT_APP_API_URI + '/pdfs').then(
+      response => response.json()
+    ).then(
+      data => {
+        setBackendData(data);
+      }
+    )
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <>
+      <TopAppBar>
+        <TopAppBarRow>
+          <TopAppBarSection>
+            <TopAppBarTitle>Quick App for downloading PDFs from a COS Bucket</TopAppBarTitle>
+          </TopAppBarSection>
+        </TopAppBarRow>
+      </TopAppBar>
+      <TopAppBarFixedAdjust />
+      <div>
+      {(typeof backendData.pdfs === 'undefined') ? (
+        <p>Loading.....</p>
+      ) : (
+        <List twoLine>
+        
+          { backendData.pdfs.map((pdf, i) => (
+            <ListItem key={i} onClick={(e) => {
+              e.preventDefault();
+              window.location.href=process.env.REACT_APP_API_URI + "/pdfs/" + pdf.Key;
+            }}>
+              <ListItemGraphic icon="picture_as_pdf" />
+              <ListItemText>
+                <ListItemPrimaryText>{pdf.Key}</ListItemPrimaryText>
+                <ListItemSecondaryText>{new Date(pdf.LastModified).toDateString()}</ListItemSecondaryText>
+              </ListItemText>
+              <ListItemMeta icon="cloud_download" />
+            </ListItem>
+          ))}
+        </List>
+      )}
     </div>
+    </>
   );
 }
 
