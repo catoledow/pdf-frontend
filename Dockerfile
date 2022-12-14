@@ -2,9 +2,6 @@
 # Use a Node 16 base image
 FROM registry.access.redhat.com/ubi8/nodejs-16
 # Set the working directory to /app inside the container
-USER root
-RUN dnf -y update-minimal --security --sec-severity=Important \
-    --sec-severity=Critical && dnf clean all
 
 USER 1001
 
