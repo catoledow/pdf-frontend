@@ -1,23 +1,22 @@
 # ==== CONFIGURE =====
 # Use a Node 16 base image
-FROM node:16-alpine 
+FROM registry.access.redhat.com/ubi8/nodejs-16
 # Set the working directory to /app inside the container
-WORKDIR /app
+USER root
+RUN dnf -y update-minimal --security --sec-severity=Important \
+    --sec-severity=Critical && dnf clean all
+
+USER 1001
+
+WORKDIR /opt/app-root/src
+
 # Copy app files
-COPY package.json ./
-COPY package-lock.json ./
+COPY package.json package-lock.json .env.development .env.production ./
 COPY src ./src
 COPY public ./public
-COPY .env.development ./.env.development
-COPY .env.production ./.env.production
 
 # ==== BUILD =====
-# Install dependencies (npm ci makes sure the exact versions in the lockfile gets installed)
-RUN npm ci 
-# Build the app
-RUN npm run build
-
-RUN npm install -g serve
+RUN npm ci && npm run build && npm install -g serve
 # ==== RUN =======
 
 # Expose the port on which the app will be running (3000 is the default that `serve` uses)
